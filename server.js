@@ -17,7 +17,6 @@ const server = http.createServer((req, res) => {
         }
     });
 
-
     if (parsedUrl.pathname.includes('documentation')) {
         fs.readFile('documentation.html', (err, data) => {
             if (err) {
