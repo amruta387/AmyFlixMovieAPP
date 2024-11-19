@@ -1,6 +1,6 @@
-const http = require('http'); // Import the http module
-const fs = require('fs'); // Import the fs module
-const url = require('url'); // Import the url module
+const http = require('http'); 
+const fs = require('fs'); 
+const url = require('url'); 
 
 const port = 8080;
 
@@ -17,7 +17,6 @@ const server = http.createServer((req, res) => {
         }
     });
 
-    // Serve the appropriate file based on the URL
     if (parsedUrl.pathname.includes('documentation')) {
         fs.readFile('documentation.html', (err, data) => {
             if (err) {
@@ -41,7 +40,6 @@ const server = http.createServer((req, res) => {
     }
 });
 
-// Start the server
 server.listen(port, () => {
     console.log(`Server is listening on http://localhost:${port}`);
 });
