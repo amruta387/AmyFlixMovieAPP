@@ -3,12 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Api Docs</title>
+    <title>MovieAPI Documentation</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
 </head>
 <body>
-    <h1>Movie API</h1>
-    <p>Welcome to the Movie API! This API allows you to fetch movie data from a database of movies. 
-    You can retrieve information such as titles, release dates, and movie summaries.</p>
-    
+    <h1>API Documentation</h1>
+
+    <h2>Endpoints</h2>
+    <p>The following table provides details about the API endpoints, including their request methods, URLs, and expected responses.</p>
+
+    <h3>Movies</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Request</th>
+                <th>URL</th>
+                <th>Response</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>GET</td>
+                <td>/movies</td>
+                <td>Retrieve a list of all movies.<br>Example: <code>[{"id": 1, "title": "Jab We Met", "genre": "Romance"}]</code></td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/movies/{id}</td>
+                <td>Retrieve details of a single movie by ID.<br>Example: <code>{"id": 1, "title": "Jab We Met", "genre": "Romance"}</code></td>
+            </tr>
+            <tr>
+                <td>POST</td>
+                <td>/movies</td>
+                <td>Create a new movie.<br>Request Body: <code>{"title": "Tamasha", "genre": "Drama"}</code><br>Response: <code>{"id": 2, "message": "Movie created successfully."}</code></td>
+            </tr>
+            <tr>
+                <td>PUT</td>
+                <td>/movies/{id}</td>
+                <td>Update an existing movie by ID.<br>Request Body: <code>{"title": "Jab We Met", "genre": "Drama"}</code><br>Response: <code>{"message": "Movie updated successfully."}</code></td>
+            </tr>
+            <tr>
+                <td>DELETE</td>
+                <td>/movies/{id}</td>
+                <td>Delete a movie by ID.<br>Response: <code>{"message": "Movie deleted successfully."}</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Users</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Request</th>
+                <th>URL</th>
+                <th>Response</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>GET</td>
+                <td>/users</td>
+                <td>Retrieve a list of all users.<br>Example: <code>[{"id": 1, "name": "Alice", "email": "alice@example.com"}]</code></td>
+            </tr>
+            <tr>
+                <td>GET</td>
+                <td>/users/{id}</td>
+                <td>Retrieve details of a single user by ID.<br>Example: <code>{"id": 1, "name": "Alice", "email": "alice@example.com"}</code></td>
+            </tr>
+            <tr>
+                <td>POST</td>
+                <td>/users</td>
+                <td>Create a new user.<br>Request Body: <code>{"name": "Bob", "email": "bob@example.com"}</code><br>Response: <code>{"id": 2, "message": "User created successfully."}</code></td>
+            </tr>
+            <tr>
+                <td>PUT</td>
+                <td>/users/{id}</td>
+                <td>Update an existing user by ID.<br>Request Body: <code>{"name": "Alice Johnson", "email": "alice.j@example.com"}</code><br>Response: <code>{"message": "User updated successfully."}</code></td>
+            </tr>
+            <tr>
+                <td>DELETE</td>
+                <td>/users/{id}</td>
+                <td>Delete a user by ID.<br>Response: <code>{"message": "User deleted successfully."}</code></td>
+            </tr>
+        </tbody>
+    </table>
 </body>
 </html>
