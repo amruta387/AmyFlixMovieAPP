@@ -3,16 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MovieAPI Documentation</title>
+    <title>Movie API Documentation</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 20px;
         }
         th, td {
             border: 1px solid #ddd;
             padding: 8px;
-            text-align: left;
         }
         th {
             background-color: #f4f4f4;
@@ -20,83 +25,162 @@
     </style>
 </head>
 <body>
-    <h1>API Documentation</h1>
-
-    <h2>Endpoints</h2>
-    <p>The following table provides details about the API endpoints, including their request methods, URLs, and expected responses.</p>
-
-    <h3>Movies</h3>
+    <h1>Movie API Documentation</h1>
+    <p>This API allows users to manage movie data and user information. Below are the available endpoints, their methods, expected inputs, and responses.</p>
+    
     <table>
         <thead>
             <tr>
-                <th>Request</th>
-                <th>URL</th>
-                <th>Response</th>
+                <th>Endpoint</th>
+                <th>HTTP Method</th>
+                <th>Description</th>
+                <th>Request Format</th>
+                <th>Response Format</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>GET</td>
                 <td>/movies</td>
-                <td>Retrieve a list of all movies.<br>Example: <code>[{"id": 1, "title": "Jab We Met", "genre": "Romance"}]</code></td>
-            </tr>
-            <tr>
                 <td>GET</td>
-                <td>/movies/{id}</td>
-                <td>Retrieve details of a single movie by ID.<br>Example: <code>{"id": 1, "title": "Jab We Met", "genre": "Romance"}</code></td>
+                <td>Retrieve a list of all movies.</td>
+                <td>N/A</td>
+                <td>
+                    <pre>
+[ 
+    {
+        "title": "PK",
+        "description": "An alien named PK arrives on Earth and struggles to understand human nature, while uncovering the flaws of human society.",
+        "genre": { "name": "Science Fiction", "description": "A genre focusing on futuristic or scientific concepts." },
+        "director": { "name": "Rajkumar Hirani", "bio": "Rajkumar Hirani is a renowned Indian film director known for his storytelling." },
+        "imageUrl": "http://example.com/image.jpg",
+        "featured": true
+    },
+    ...
+]
+                    </pre>
+                </td>
             </tr>
             <tr>
-                <td>POST</td>
-                <td>/movies</td>
-                <td>Create a new movie.<br>Request Body: <code>{"title": "Tamasha", "genre": "Drama"}</code><br>Response: <code>{"id": 2, "message": "Movie created successfully."}</code></td>
-            </tr>
-            <tr>
-                <td>PUT</td>
-                <td>/movies/{id}</td>
-                <td>Update an existing movie by ID.<br>Request Body: <code>{"title": "Jab We Met", "genre": "Drama"}</code><br>Response: <code>{"message": "Movie updated successfully."}</code></td>
-            </tr>
-            <tr>
-                <td>DELETE</td>
-                <td>/movies/{id}</td>
-                <td>Delete a movie by ID.<br>Response: <code>{"message": "Movie deleted successfully."}</code></td>
-            </tr>
-        </tbody>
-    </table>
-
-    <h3>Users</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Request</th>
-                <th>URL</th>
-                <th>Response</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
+                <td>/movies/:title</td>
                 <td>GET</td>
+                <td>Retrieve data for a specific movie by title.</td>
+                <td>N/A</td>
+                <td>
+                    <pre>
+{
+    "title": "PK",
+    "description": "An alien named PK arrives on Earth and struggles to understand human nature, while uncovering the flaws of human society.",
+    "genre": { "name": "Science Fiction", "description": "A genre focusing on futuristic or scientific concepts." },
+    "director": { "name": "Rajkumar Hirani", "bio": "Rajkumar Hirani is a renowned Indian film director known for his storytelling." },
+    "imageUrl": "http://example.com/image.jpg",
+    "featured": true
+}
+                    </pre>
+                </td>
+            </tr>
+            <tr>
+                <td>/movies/genre/:genreName</td>
+                <td>GET</td>
+                <td>Retrieve details of a specific genre by name.</td>
+                <td>N/A</td>
+                <td>
+                    <pre>
+{
+    "name": "Science Fiction",
+    "description": "A genre focusing on futuristic or scientific concepts."
+}
+                    </pre>
+                </td>
+            </tr>
+            <tr>
+                <td>/movies/director/:directorName</td>
+                <td>GET</td>
+                <td>Retrieve details of a specific director by name.</td>
+                <td>N/A</td>
+                <td>
+                    <pre>
+{
+    "name": "Rajkumar Hirani",
+    "bio": "Rajkumar Hirani is a renowned Indian film director known for his storytelling.",
+    "birthYear": 1962,
+    "deathYear": null
+}
+                    </pre>
+                </td>
+            </tr>
+            <tr>
                 <td>/users</td>
-                <td>Retrieve a list of all users.<br>Example: <code>[{"id": 1, "name": "Alice", "email": "alice@example.com"}]</code></td>
-            </tr>
-            <tr>
-                <td>GET</td>
-                <td>/users/{id}</td>
-                <td>Retrieve details of a single user by ID.<br>Example: <code>{"id": 1, "name": "Alice", "email": "alice@example.com"}</code></td>
-            </tr>
-            <tr>
                 <td>POST</td>
-                <td>/users</td>
-                <td>Create a new user.<br>Request Body: <code>{"name": "Bob", "email": "bob@example.com"}</code><br>Response: <code>{"id": 2, "message": "User created successfully."}</code></td>
+                <td>Register a new user.</td>
+                <td>
+                    <pre>
+{
+    "username": "Amy123",
+    "email": "amy123@gmail.com",
+    "birthDate": "1987-03-03",
+    "favoriteMovies": []
+}
+                    </pre>
+                </td>
+                <td>
+                    <pre>
+{
+    "username": "Amy123",
+    "email": "amy123@gmail.com",
+    "birthDate": "1987-03-03",
+    "favoriteMovies": []
+}
+                    </pre>
+                </td>
             </tr>
             <tr>
+                <td>/users/:username</td>
                 <td>PUT</td>
-                <td>/users/{id}</td>
-                <td>Update an existing user by ID.<br>Request Body: <code>{"name": "Alice Johnson", "email": "alice.j@example.com"}</code><br>Response: <code>{"message": "User updated successfully."}</code></td>
+                <td>Update user info by username.</td>
+                <td>
+                    <pre>
+{
+    "email": "amy2016@example.com"
+}
+                    </pre>
+                </td>
+                <td>
+                    <pre>
+{
+    "username": "Amy123",
+    "email": "amy2016@example.com",
+    "birthDate": "1987-03-03",
+    "favoriteMovies": []
+}
+                    </pre>
+                </td>
             </tr>
             <tr>
+                <td>/users/:username/movies/:title</td>
+                <td>POST</td>
+                <td>Add a movie to user's favorites by username.</td>
+                <td>N/A</td>
+                <td>
+                    <pre>Movie 'PK' added to favorites.</pre>
+                </td>
+            </tr>
+            <tr>
+                <td>/users/:username/movies/:title</td>
                 <td>DELETE</td>
-                <td>/users/{id}</td>
-                <td>Delete a user by ID.<br>Response: <code>{"message": "User deleted successfully."}</code></td>
+                <td>Remove a movie from user's favorites by username.</td>
+                <td>N/A</td>
+                <td>
+                    <pre>Movie 'PK' removed from favorites.</pre>
+                </td>
+            </tr>
+            <tr>
+                <td>/users/:username</td>
+                <td>DELETE</td>
+                <td>Deregister a user by username.</td>
+                <td>N/A</td>
+                <td>
+                    <pre>User 'Amy123' deregistered.</pre>
+                </td>
             </tr>
         </tbody>
     </table>
