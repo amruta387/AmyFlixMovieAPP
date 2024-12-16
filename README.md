@@ -27,8 +27,8 @@
     DELETE /users/:username - Delete user.
 
 ## Deployment
-GitHub Repository: GitHub
-Live API on Heroku: AmyFlix API
+    GitHub Repository: GitHub
+    Live API on Heroku: AmyFlix API
 
 ## Setup
     * Clone the repo: git clone https://github.com/your-username/myFlix-API.git.
