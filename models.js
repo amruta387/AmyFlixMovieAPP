@@ -32,6 +32,13 @@ const userSchema = new mongoose.Schema({
     birthday: { type: Date, required: true },
     favorite_movies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }], // References to movies
 });
+userSchema.statics.hashPassword = (password) => {
+    return bcrypt.hashSync(password, 10);
+};
+
+userSchema.methods.validatePassword = function (password) {
+    return bcrypt.compareSync(password, this.Password);
+};
 
 //  Mongoose models
 const Movie = mongoose.model('Movie', movieSchema);
