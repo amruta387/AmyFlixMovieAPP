@@ -36,14 +36,16 @@ app.get("/", (req, res) => {
     res.send("Welcome to the Movie API!");
 });
 
-// List all movies
-app.get("/movies", (req, res) => {
+
+// List all movies 
+app.get("/movies", authenticate, (req, res) => {
     Movie.find()
         .then((movies) => res.status(200).json(movies))
         .catch((error) => res.status(500).json({ error: error.message }));
 });
-// Return a single movie by title
-app.get("/movies/:title", (req, res) => {
+
+// Return a single movie by title 
+app.get("/movies/:title", authenticate, (req, res) => {
     Movie.findOne({ title: req.params.title })
         .then(movie => {
             if (movie) {
@@ -55,8 +57,8 @@ app.get("/movies/:title", (req, res) => {
         .catch(error => res.status(500).json({ error: error.message }));
 });
 
-// Return a genre by name
-app.get("/movies/genre/:genreName", (req, res) => {
+// Return a genre by name 
+app.get("/movies/genre/:genreName", authenticate, (req, res) => {
     Movie.findOne({ "genre.name": req.params.genreName })
         .then(movie => {
             if (movie) {
@@ -68,8 +70,8 @@ app.get("/movies/genre/:genreName", (req, res) => {
         .catch(error => res.status(500).json({ error: error.message }));
 });
 
-// Return a director by name
-app.get("/movies/director/:directorName", (req, res) => {
+// Return a director by name 
+app.get("/movies/director/:directorName", authenticate, (req, res) => {
     Movie.findOne({ "director.name": req.params.directorName })
         .then(movie => {
             if (movie) {
@@ -100,7 +102,15 @@ app.post(
             .withMessage("Username must be at least 3 characters long."),
         check("password")
             .isLength({ min: 8 })
-            .withMessage("Password must be at least 8 characters long."),
+            .withMessage("Password must be at least 8 characters long.")
+            .matches(/\d/)
+            .withMessage("Password must contain at least one number.")
+            .matches(/[a-z]/)
+            .withMessage("Password must contain at least one lowercase letter.")
+            .matches(/[A-Z]/)
+            .withMessage("Password must contain at least one uppercase letter.")
+            .matches(/[!@#$%^&*]/)
+            .withMessage("Password must contain at least one special character."),
         check("email").isEmail().withMessage("Email must be valid."),
         check("name").notEmpty().withMessage("Name is required."),
     ],
