@@ -1,47 +1,47 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const path = require("path");
-const bodyParser = require('body-parser');
-const passport = require('passport');
-const jwt = require('jsonwebtoken');
-const { Movie, User } = require('./models'); // Adjust as per your file structure
-const bcrypt = require('bcrypt');
+const { Movie, User } = require('./models');
+const bodyParser = require("body-parser");
+const passport = require("passport");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const cors = require("cors");
+const { check, validationResult } = require("express-validator");
 
 const app = express();
 const port = process.env.PORT || 8080;
 
-mongoose.connect('mongodb://localhost:27017/amyFlixDB')
-    .then(() => console.log('Connected to MongoDB'))
-    .catch((err) => console.error('Failed to connect to MongoDB:', err));
+// MongoDB connection
+mongoose
+    .connect(process.env.MONGO_URI || "mongodb://localhost:27017/amyFlixDB")
+    .then(() => console.log("Connected to MongoDB"))
+    .catch((err) => console.error("Failed to connect to MongoDB:", err));
 
 // Middleware
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
+app.use(cors());
 
-// Passport strategies
-require('./passport'); // Ensure this file defines your passport strategies
+// Passport strategy (ensure a file defines this strategy)
+require("./passport");
 
-// Auth Middleware
-const authenticate = passport.authenticate('jwt', { session: false });
+// Utility: Authenticate middleware
+const authenticate = passport.authenticate("jwt", { session: false });
 
 // ---------------------------------------------------------------------------------
 // API ENDPOINTS
 
-// Open main page
+// Welcome message
 app.get("/", (req, res) => {
     res.send("Welcome to the Movie API!");
 });
 
-// Return a list of ALL movies
+// List all movies
 app.get("/movies", (req, res) => {
     Movie.find()
-        .then(movies => res.status(200).json(movies))
-        .catch(error => res.status(500).json({ error: error.message }));
+        .then((movies) => res.status(200).json(movies))
+        .catch((error) => res.status(500).json({ error: error.message }));
 });
-
 // Return a single movie by title
 app.get("/movies/:title", (req, res) => {
     Movie.findOne({ title: req.params.title })
@@ -91,132 +91,201 @@ app.get('/users', authenticate, async (req, res) => {
     }
 });
 
-// New user registration
+// Register a new user
+app.post(
+    "/users",
+    [
+        check("username")
+            .isLength({ min: 3 })
+            .withMessage("Username must be at least 3 characters long."),
+        check("password")
+            .isLength({ min: 8 })
+            .withMessage("Password must be at least 8 characters long."),
+        check("email").isEmail().withMessage("Email must be valid."),
+        check("name").notEmpty().withMessage("Name is required."),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
 
-app.post("/users", async (req, res) => {
-    const { username, password, name, email, birthday } = req.body;
+        const { username, password, name, email, birthday } = req.body;
+
+        try {
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            const newUser = new User({
+                username,
+                password: hashedPassword,
+                name,
+                email,
+                birthday,
+            });
+
+            const user = await newUser.save();
+            res.status(201).json(user);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
+
+// User login
+
+app.post(
+    "/auth/login",
+    [
+        check("username").notEmpty().withMessage("Username is required."),
+        check("password").notEmpty().withMessage("Password is required."),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { username, password } = req.body;
+
+        try {
+            // Check if the user exists using the username
+            const user = await User.findOne({ username });
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            // Compare the provided password with the hashed password in the database
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ message: "Invalid password" });
+            }
+
+            // Generate JWT token if login is successful
+            const payload = { _id: user._id, username: user.username };
+            const token = jwt.sign(
+                payload,
+                process.env.JWT_SECRET || "your_jwt_secret",
+                { expiresIn: "1h" }
+            );
+
+            return res.status(200).json({ message: "Login successful", token });
+        } catch (error) {
+            // Catch and return any unexpected errors
+            console.error("Login error:", error);
+            return res.status(500).json({ error: error.message });
+        }
+    }
+);
+
+
+
+
+// Update user info
+app.put(
+    "/users/:username",
+    authenticate,
+    [
+        check("email").optional().isEmail().withMessage("Email must be valid."),
+        check("password")
+            .optional()
+            .isLength({ min: 8 })
+            .withMessage("Password must be at least 8 characters long."),
+        check("name").optional().notEmpty().withMessage("Name cannot be empty."),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        try {
+            const updatedData = req.body;
+
+            if (updatedData.password) {
+                updatedData.password = await bcrypt.hash(updatedData.password, 10);
+            }
+
+            const updatedUser = await User.findOneAndUpdate(
+                { username: req.params.username },
+                { $set: updatedData },
+                { new: true }
+            );
+            if (!updatedUser) return res.status(404).send("User not found.");
+
+            res.status(200).json(updatedUser);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
+
+// Add a movie to favorites
+app.post("/users/:username/movies/:movieId", authenticate, async (req, res) => {
+    const { username, movieId } = req.params;
 
     try {
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = await User.findOne({ username });
+        if (!user) return res.status(404).send("User not found.");
 
-        const newUser = new User({
-            username,
-            password: hashedPassword,
-            name,
-            email,
-            birthday,
-        });
+        if (user.favorite_movies.includes(movieId)) {
+            return res.status(400).send("Movie already in favorites.");
+        }
 
-        const user = await newUser.save();
-        res.status(201).json(user);
+        user.favorite_movies.push(movieId);
+        await user.save();
+        res.status(200).send("Movie added to favorites.");
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-
-// User login
-app.post('/auth/login', (req, res, next) => {
-    passport.authenticate('local', { session: false }, (err, user, info) => {
-        if (err || !user) {
-            return res.status(400).json({ message: 'Authentication failed', user });
-        }
-
-        // Generate JWT token for the authenticated user
-        const payload = {
-            _id: user._id, // Include the user's unique ID or any other identifier you want in the payload
-            username: user.username,
-        };
-        const token = jwt.sign(payload, 'your_jwt_secret', { expiresIn: '1h' }); // Secret and expiration time
-
-        return res.json({ message: 'Login successful', token });
-    })(req, res, next);
-});
-
-
-// Update user info by username
-app.put("/users/:username", authenticate, (req, res) => {
-    User.findOneAndUpdate({ username: req.params.username }, { $set: req.body }, { new: true })
-        .then(updatedUser => {
-            if (updatedUser) {
-                res.status(200).json(updatedUser);
-            } else {
-                res.status(404).send("User not found.");
-            }
-        })
-        .catch(error => res.status(500).json({ error: error.message }));
-});
-
-// Add a movie to favorites
-app.post("/users/:username/movies/:movieId", authenticate, (req, res) => {
-    const movieId = req.params.movieId; // Get movie ID from the URL
-    User.findOne({ username: req.params.username })
-        .then(user => {
-            if (user) {
-                // Check if the movie is already in the favorites
-                if (user.favorite_movies.includes(movieId)) {
-                    return res.status(400).send(`Movie with ID '${movieId}' is already in favorites.`);
-                }
-                user.favorite_movies.push(movieId);
-                user.save()
-                    .then(() => res.status(200).send(`Movie with ID '${movieId}' added to favorites.`))
-                    .catch(error => res.status(500).json({ error: error.message }));
-            } else {
-                res.status(404).send("User not found.");
-            }
-        })
-        .catch(error => res.status(500).json({ error: error.message }));
-});
-
 // Remove a movie from favorites
-app.delete("/users/:username/movies/:movieId", authenticate, (req, res) => {
-    const movieId = req.params.movieId; // Get movie ID from the URL
-    User.findOne({ username: req.params.username })
-        .then(user => {
-            if (user) {
-                // Check if the movie exists in the favorites
-                if (!user.favorite_movies.includes(movieId)) {
-                    return res.status(400).send(`Movie with ID '${movieId}' is not in favorites.`);
-                }
-                user.favorite_movies = user.favorite_movies.filter(id => id.toString() !== movieId);
-                user.save()
-                    .then(() => res.status(200).send(`Movie with ID '${movieId}' removed from favorites.`))
-                    .catch(error => res.status(500).json({ error: error.message }));
-            } else {
-                res.status(404).send("User not found.");
-            }
-        })
-        .catch(error => res.status(500).json({ error: error.message }));
+app.delete(
+    "/users/:username/movies/:movieId",
+    authenticate,
+    async (req, res) => {
+        const { username, movieId } = req.params;
+
+        try {
+            const user = await User.findOne({ username });
+            if (!user) return res.status(404).send("User not found.");
+
+            user.favorite_movies = user.favorite_movies.filter(
+                (id) => id.toString() !== movieId
+            );
+            await user.save();
+            res.status(200).send("Movie removed from favorites.");
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
+
+// Delete user
+app.delete("/users/:username", authenticate, async (req, res) => {
+    try {
+        const deletedUser = await User.findOneAndDelete({
+            username: req.params.username,
+        });
+        if (!deletedUser) return res.status(404).send("User not found.");
+
+        res.status(200).send(`User '${deletedUser.username}' deregistered.`);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
-
-// User deregistration
-app.delete("/users/:username", authenticate, (req, res) => {
-    User.findOneAndDelete({ username: req.params.username })
-        .then(deletedUser => {
-            if (deletedUser) {
-                res.status(200).send(`User '${deletedUser.username}' deregistered.`);
-            } else {
-                res.status(404).send("User not found.");
-            }
-        })
-        .catch(error => res.status(500).json({ error: error.message }));
-});
-
-// Documentation.html 
-app.use(express.static(path.join(__dirname, "public")));
-
+// ---------------------------------------------------------------------------------
 // Error handling
 app.use((req, res) => {
     res.status(404).send("Resource not found!");
 });
+
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send("Something went wrong!");
 });
 
-// ---------------------------------------------------------------------------------
 // Start the server
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
