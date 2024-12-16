@@ -1,5 +1,6 @@
 ## AmyFlixMovie API
-    The AmyFlix API is a RESTful server-side application that provides users with access to movie information, user profile management, and favorite movie lists.
+    The AmyFlix API is a RESTful server-side application that provides users 
+    with access to movie information, user profile management, and favorite movie lists.
 
 ## Features
     * Retrieve all movies or details about a specific movie, genre, or director.
