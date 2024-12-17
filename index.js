@@ -12,10 +12,9 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 // MongoDB connection
-mongoose
-    .connect(process.env.MONGO_URI || "mongodb://localhost:27017/amyFlixDB")
-    .then(() => console.log("Connected to MongoDB"))
-    .catch((err) => console.error("Failed to connect to MongoDB:", err));
+mongoose.connect( process.env.CONNECTION_URI)
+.then(() => console.log("Connected to MongoDB"))
+    .catch((err) => console.error("Failed to connect to MongoDB:", err)); 
 
 // Middleware
 app.use(bodyParser.json());
