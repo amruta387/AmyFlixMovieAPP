@@ -1,5 +1,6 @@
 ## AmyFlixMovie API
-    The AmyFlix API is a RESTful server-side application that provides users with access to movie information, user profile management, and favorite movie lists.
+    The AmyFlix API is a RESTful server-side application that provides users with access to movie information,
+    user profile management, and favorite movie lists.
 
 ## Features
     * Retrieve all movies or details about a specific movie, genre, or director.
@@ -26,8 +27,8 @@
     DELETE /users/:username - Delete user.
 
 ## Deployment
-GitHub Repository: GitHub
-Live API on Heroku: AmyFlix API
+    * GitHub Repository: https://github.com/amruta387/AmyFlixMovieAPP
+    * Live API on Heroku: https://amy-flix-movie-app-ce4aa0da3eb4.herokuapp.com/
 
 ## Setup
     * Clone the repo: git clone https://github.com/your-username/myFlix-API.git.
