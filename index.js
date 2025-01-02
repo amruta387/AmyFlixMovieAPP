@@ -11,10 +11,20 @@ const { check, validationResult } = require("express-validator");
 const app = express();
 const port = process.env.PORT || 8080;
 
-// MongoDB connection
-mongoose.connect( process.env.CONNECTION_URI)
-.then(() => console.log("Connected to MongoDB"))
-    .catch((err) => console.error("Failed to connect to MongoDB:", err)); 
+require('dotenv').config(); // Load environment variables
+
+// Check if the CONNECTION_URI is defined
+if (!process.env.CONNECTION_URI) {
+    console.error("MongoDB connection URI is not defined. Check your .env file.");
+    process.exit(1); // Exit the application
+}
+
+// Connect to MongoDB
+mongoose.connect(process.env.CONNECTION_URI)
+    .then(() => console.log("Connected to MongoDB"))
+    .catch((err) => console.error("Failed to connect to MongoDB:", err));
+
+
 
 // Middleware
 app.use(bodyParser.json());
