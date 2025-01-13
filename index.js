@@ -47,7 +47,7 @@ app.get("/", (req, res) => {
 
 
 // List all movies 
-app.get("/movies",(req, res) => {
+app.get("/movies", authenticate,(req, res) => {
     Movie.find()
         .then((movies) => res.status(200).json(movies))
         .catch((error) => res.status(500).json({ error: error.message }));
