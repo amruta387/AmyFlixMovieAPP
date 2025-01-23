@@ -53,18 +53,22 @@ app.get("/movies",(req, res) => {
         .catch((error) => res.status(500).json({ error: error.message }));
 });
 
-// Return a single movie by title 
-app.get("/movies/:title", authenticate, (req, res) => {
-    Movie.findOne({ title: req.params.title })
+// Return a single movie by id
+app.get("/movies/:id", authenticate, (req, res) => {
+    const { id } = req.params;  // Extract the movie id from the URL
+
+    // Use the `findById` method to find a movie by its unique MongoDB `id`
+    Movie.findById(id)
         .then(movie => {
             if (movie) {
-                res.status(200).json(movie);
+                res.status(200).json(movie);  // If movie found, return the movie data
             } else {
-                res.status(404).send("Movie not found.");
+                res.status(404).send("Movie not found.");  // If movie not found
             }
         })
-        .catch(error => res.status(500).json({ error: error.message }));
+        .catch(error => res.status(500).json({ error: error.message }));  // Handle errors
 });
+
 
 // Return a genre by name 
 app.get("/movies/genre/:genreName", authenticate, (req, res) => {
