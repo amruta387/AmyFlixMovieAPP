@@ -43,7 +43,7 @@ passport.use(
 // JWT strategy to validate the token and extract user info from the token
 passport.use(new JWTStrategy({
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-    secretOrKey: 'your_jwt_secret', // Make sure this matches your secret key used during JWT creation
+    secretOrKey: process.env.JWT_SECRET || 'your_jwt_secret', // Make sure this matches your secret key used during JWT creation
 }, async (jwtPayload, callback) => {
     try {
         const user = await Users.findById(jwtPayload._id); // Find the user based on JWT payload

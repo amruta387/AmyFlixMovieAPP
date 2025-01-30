@@ -200,6 +200,26 @@ app.post(
     }
 );
 
+// Endpoint to get the logged-in user's information
+app.get("/users/me", authenticate, (req, res) => {
+    const loggedInUser = req.user;
+
+    if (!loggedInUser) {
+        return res.status(404).send("User not found.");
+    }
+
+    // You can choose which user details to return
+    const userInfo = {
+        username: loggedInUser.username,
+        name: loggedInUser.name,
+        email: loggedInUser.email,
+        birthday: loggedInUser.birthday,
+        favorite_movies: loggedInUser.favorite_movies
+    };
+
+    // Send the logged-in user info as the response
+    res.status(200).json(userInfo);
+});
 
 
 
