@@ -13,23 +13,17 @@ const port = process.env.PORT || 8080;
 
 require('dotenv').config(); // Load environment variables
 
-/**
- * MongoDB connection URI check
- * @throws {Error} If the CONNECTION_URI environment variable is not defined
- */
+// Check if the CONNECTION_URI is defined
 if (!process.env.CONNECTION_URI) {
     console.error("MongoDB connection URI is not defined. Check your .env file.");
     process.exit(1); // Exit the application
 }
 
-/**
- * Connect to MongoDB
- * @returns {Promise<void>}
- * @throws {Error} If connection fails
- */
+// Connect to MongoDB
 mongoose.connect(process.env.CONNECTION_URI)
     .then(() => console.log("Connected to MongoDB"))
     .catch((err) => console.error("Failed to connect to MongoDB:", err));
+
 
 
 // Middleware
@@ -46,43 +40,24 @@ const authenticate = passport.authenticate("jwt", { session: false });
 // ---------------------------------------------------------------------------------
 // API ENDPOINTS
 
-/**
- * Welcome message endpoint
- * @function
- * @name GET /
- * @returns {string} 200 - A message welcoming users to the Movie API.
- */
+// Welcome message
 app.get("/", (req, res) => {
     res.send("Welcome to the Movie API!");
 });
 
-/**
- * List all movies
- * @function
- * @name GET /movies
- * @param {Object} req - Request object
- * @param {Object} res - Response object
- * @returns {Array<Movie>} 200 - A list of all movies
- * @returns {Object} 500 - Error object if fetching movies fails
- */
-app.get("/movies", authenticate, (req, res) => {
+
+// List all movies 
+app.get("/movies", authenticate,(req, res) => {
     Movie.find()
         .then((movies) => res.status(200).json(movies))
         .catch((error) => res.status(500).json({ error: error.message }));
 });
 
-/**
- * Return a single movie by ID
- * @function
- * @name GET /movies/:id
- * @param {string} id - The ID of the movie
- * @returns {Movie} 200 - The movie data
- * @returns {string} 404 - Movie not found message
- * @returns {Object} 500 - Error object if fetching movie fails
- */
+// Return a single movie by id
 app.get("/movies/:id", authenticate, (req, res) => {
     const { id } = req.params;  // Extract the movie id from the URL
 
+    // Use the findById method to find a movie by its unique MongoDB id
     Movie.findById(id)
         .then(movie => {
             if (movie) {
@@ -94,15 +69,8 @@ app.get("/movies/:id", authenticate, (req, res) => {
         .catch(error => res.status(500).json({ error: error.message }));  // Handle errors
 });
 
-/**
- * Return a genre by name
- * @function
- * @name GET /movies/genre/:genreName
- * @param {string} genreName - The name of the genre
- * @returns {Object} 200 - The genre object
- * @returns {string} 404 - Genre not found message
- * @returns {Object} 500 - Error object if fetching genre fails
- */
+
+// Return a genre by name 
 app.get("/movies/genre/:genreName", authenticate, (req, res) => {
     Movie.findOne({ "genre.name": req.params.genreName })
         .then(movie => {
@@ -115,15 +83,7 @@ app.get("/movies/genre/:genreName", authenticate, (req, res) => {
         .catch(error => res.status(500).json({ error: error.message }));
 });
 
-/**
- * Return a director by name
- * @function
- * @name GET /movies/director/:directorName
- * @param {string} directorName - The name of the director
- * @returns {Object} 200 - The director object
- * @returns {string} 404 - Director not found message
- * @returns {Object} 500 - Error object if fetching director fails
- */
+// Return a director by name 
 app.get("/movies/director/:directorName", authenticate, (req, res) => {
     Movie.findOne({ "director.name": req.params.directorName })
         .then(movie => {
@@ -136,15 +96,7 @@ app.get("/movies/director/:directorName", authenticate, (req, res) => {
         .catch(error => res.status(500).json({ error: error.message }));
 });
 
-/**
- * Fetch all users
- * @function
- * @name GET /users
- * @param {Object} req - Request object
- * @param {Object} res - Response object
- * @returns {Array<User>} 200 - A list of all users
- * @returns {Object} 500 - Error object if fetching users fails
- */
+// Fetch all users
 app.get('/users', authenticate, async (req, res) => {
     try {
         const users = await User.find();
@@ -154,19 +106,7 @@ app.get('/users', authenticate, async (req, res) => {
     }
 });
 
-/**
- * Register a new user
- * @function
- * @name POST /users
- * @param {string} username - The user's username
- * @param {string} password - The user's password
- * @param {string} email - The user's email
- * @param {string} name - The user's name
- * @param {Date} birthday - The user's birthday
- * @returns {Object} 201 - Created user data
- * @returns {Object} 400 - Validation error
- * @returns {Object} 500 - Error object if registration fails
- */
+// Register a new user
 app.post(
     "/users",
     [
@@ -176,10 +116,14 @@ app.post(
         check("password")
             .isLength({ min: 8 })
             .withMessage("Password must be at least 8 characters long.")
-            .matches(/\d/).withMessage("Password must contain at least one number.")
-            .matches(/[a-z]/).withMessage("Password must contain at least one lowercase letter.")
-            .matches(/[A-Z]/).withMessage("Password must contain at least one uppercase letter.")
-            .matches(/[!@#$%^&*]/).withMessage("Password must contain at least one special character."),
+            .matches(/\d/)
+            .withMessage("Password must contain at least one number.")
+            .matches(/[a-z]/)
+            .withMessage("Password must contain at least one lowercase letter.")
+            .matches(/[A-Z]/)
+            .withMessage("Password must contain at least one uppercase letter.")
+            .matches(/[!@#$%^&*]/)
+            .withMessage("Password must contain at least one special character."),
         check("email").isEmail().withMessage("Email must be valid."),
         check("name").notEmpty().withMessage("Name is required."),
     ],
@@ -210,16 +154,8 @@ app.post(
     }
 );
 
-/**
- * User login
- * @function
- * @name POST /auth/login
- * @param {string} username - The user's username
- * @param {string} password - The user's password
- * @returns {Object} 200 - Success message with JWT token
- * @returns {Object} 400 - Invalid login credentials
- * @returns {Object} 500 - Error object if login fails
- */
+// User login
+
 app.post(
     "/auth/login",
     [
@@ -235,16 +171,19 @@ app.post(
         const { username, password } = req.body;
 
         try {
+            // Check if the user exists using the username
             const user = await User.findOne({ username });
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
             }
 
+            // Compare the provided password with the hashed password in the database
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) {
                 return res.status(400).json({ message: "Invalid password" });
             }
 
+            // Generate JWT token if login is successful
             const payload = { _id: user._id, username: user.username };
             const token = jwt.sign(
                 payload,
@@ -254,21 +193,14 @@ app.post(
 
             return res.status(200).json({ message: "Login successful", token });
         } catch (error) {
+            // Catch and return any unexpected errors
             console.error("Login error:", error);
             return res.status(500).json({ error: error.message });
         }
     }
 );
 
-/**
- * Get the logged-in user's information
- * @function
- * @name GET /users/me
- * @param {Object} req - Request object (includes authenticated user data)
- * @param {Object} res - Response object
- * @returns {Object} 200 - Logged-in user's information
- * @returns {string} 404 - User not found message
- */
+// Endpoint to get the logged-in user's information
 app.get("/users/me", authenticate, (req, res) => {
     const loggedInUser = req.user;
 
@@ -276,6 +208,7 @@ app.get("/users/me", authenticate, (req, res) => {
         return res.status(404).send("User not found.");
     }
 
+    // You can choose which user details to return
     const userInfo = {
         username: loggedInUser.username,
         name: loggedInUser.name,
@@ -284,47 +217,119 @@ app.get("/users/me", authenticate, (req, res) => {
         favorite_movies: loggedInUser.favorite_movies
     };
 
+    // Send the logged-in user info as the response
     res.status(200).json(userInfo);
+});
+
+
+
+// Update user info
+app.put(
+    "/users/:username",
+    authenticate,
+    [
+        check("email").optional().isEmail().withMessage("Email must be valid."),
+        check("password")
+            .optional()
+            .isLength({ min: 8 })
+            .withMessage("Password must be at least 8 characters long."),
+        check("name").optional().notEmpty().withMessage("Name cannot be empty."),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        try {
+            const updatedData = req.body;
+
+            if (updatedData.password) {
+                updatedData.password = await bcrypt.hash(updatedData.password, 10);
+            }
+
+            const updatedUser = await User.findOneAndUpdate(
+                { username: req.params.username },
+                { $set: updatedData },
+                { new: true }
+            );
+            if (!updatedUser) return res.status(404).send("User not found.");
+
+            res.status(200).json(updatedUser);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
+
+// Add a movie to favorites
+app.post("/users/:username/movies/:movieId", authenticate, async (req, res) => {
+    const { username, movieId } = req.params;
+
+    try {
+        const user = await User.findOne({ username });
+        if (!user) return res.status(404).send("User not found.");
+
+        if (user.favorite_movies.includes(movieId)) {
+            return res.status(400).send("Movie already in favorites.");
+        }
+
+        user.favorite_movies.push(movieId);
+        await user.save();
+        res.status(200).send("Movie added to favorites.");
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Remove a movie from favorites
+app.delete(
+    "/users/:username/movies/:movieId",
+    authenticate,
+    async (req, res) => {
+        const { username, movieId } = req.params;
+
+        try {
+            const user = await User.findOne({ username });
+            if (!user) return res.status(404).send("User not found.");
+
+            user.favorite_movies = user.favorite_movies.filter(
+                (id) => id.toString() !== movieId
+            );
+            await user.save();
+            res.status(200).send("Movie removed from favorites.");
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
+
+// Delete user
+app.delete("/users/:username", authenticate, async (req, res) => {
+    try {
+        const deletedUser = await User.findOneAndDelete({
+            username: req.params.username,
+        });
+        if (!deletedUser) return res.status(404).send("User not found.");
+
+        res.status(200).send(User, '${deletedUser.username}', deregistered);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // ---------------------------------------------------------------------------------
 // Error handling
-
-/**
- * Handle 404 errors for invalid routes
- * @function
- * @name use 404 handler
- * @param {Object} req - Request object
- * @param {Object} res - Response object
- * @returns {string} 404 - Resource not found message
- */
 app.use((req, res) => {
     res.status(404).send("Resource not found!");
 });
 
-/**
- * General error handler
- * @function
- * @name use general error handler
- * @param {Object} err - Error object
- * @param {Object} req - Request object
- * @param {Object} res - Response object
- * @param {Function} next - Next middleware function
- * @returns {string} 500 - Internal server error message
- */
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send("Something went wrong!");
 });
 
 // Start the server
-/**
- * Start the Express server
- * @function
- * @name listen
- * @param {number} port - Port number to run the server on
- * @returns {void}
- */
 app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+    console.log("Server running on http://localhost:${port}");
 });
