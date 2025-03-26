@@ -332,7 +332,7 @@ app.delete("/users/:username", authenticate, async (req, res) => {
         });
         if (!deletedUser) return res.status(404).send("User not found.");
 
-        res.status(200).send(User, '${deletedUser.username}', deregistered);
+        res.status(200).send({ message: `${deletedUser.username} deregistered successfully.` });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
