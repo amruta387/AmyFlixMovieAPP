@@ -262,6 +262,26 @@ app.put(
     }
 );
 
+// Get all favorite movies of a user
+app.get("/users/:username/favoriteMovies", authenticate, async (req, res) => {
+    const { username } = req.params;  // Extract the username from the URL
+
+    try {
+        // Find the user by their username
+        const user = await User.findOne({ username }).populate('favorite_movies');  // Use populate to get the movie details
+
+        if (!user) {
+            return res.status(404).send("User not found.");
+        }
+
+        // Return the list of favorite movies
+        res.status(200).json(user.favorite_movies);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 // Add a movie to favorites
 app.post("/users/:username/movies/:movieId", authenticate, async (req, res) => {
     const { username, movieId } = req.params;
